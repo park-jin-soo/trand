@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채우미 트랜드 원고생성기</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #667eea;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title-with-button {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .copy-btn-inline {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+            margin-left: 15px;
+        }
+
+        .copy-btn-inline:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .copy-btn-inline:active {
+            transform: translateY(0);
+        }
+
+        .btn-reset {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn-reset:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .btn-reset:active {
+            transform: translateY(0);
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-top: 5px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+            box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .result-box {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .result-box strong,
+        .result-box .highlight {
+            font-weight: bold;
+            font-size: 19px;
+            color: #333;
+        }
+
+        .title-list {
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .title-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 15px;
+        }
+
+        .title-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+        }
+
+        .title-item.selected {
+            background: #667eea;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+
+        .copy-btn {
+            background: #28a745;
+            margin-top: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #218838;
+            box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .radio-item input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-item label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .blog-url-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .blog-url-input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        .blog-url-input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-crawl {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+        }
+
+        .btn-crawl:hover {
+            background: #138496;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(23, 162, 184, 0.4);
+        }
+
+        .btn-crawl:active {
+            transform: translateY(0);
+        }
+
+        .btn-crawl:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>채우미 트랜드 원고 생성기</h1>
+        <p class="subtitle">트랜드 키워드 기반 네이버 블로그 원고 자동 생성 도구</p>
+
+        <div style="text-align: right; margin-bottom: 20px;">
+            <button class="btn-reset" onclick="_0x1h2i()">초기화</button>
+        </div>
+
+        <div class="section" style="background: #fff3cd; border-left-color: #ffc107;">
+            <div class="section-title">0. API 키 설정</div>
+            <div class="warning" style="margin-bottom: 15px;">
+                <strong>⚠️ 중요:</strong> API 키는 안전하게 관리하세요. 다른 사람과 공유하지 마세요.
+            </div>
+            <div class="input-group">
+                <label>Gemini API 키</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="password" id="apiKeyInput" placeholder="AIzaSy..." style="flex: 1;">
+                    <button class="btn-crawl" onclick="toggleApiKeyVisibility()" style="white-space: nowrap;">보기/숨기기</button>
+                </div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn btn-secondary" onclick="saveApiKey()" style="margin-top: 0;">API 키 저장</button>
+                <button class="btn btn-secondary" onclick="downloadConfig()" style="margin-top: 0;">설정 파일 다운로드</button>
+                <label class="btn btn-secondary" style="margin-top: 0; cursor: pointer; text-align: center;">
+                    설정 파일 불러오기
+                    <input type="file" id="configFileInput" accept=".json" style="display: none;" onchange="loadConfigFile(event)">
+                </label>
+            </div>
+            <div id="apiKeyStatus" style="margin-top: 10px; padding: 10px; border-radius: 8px; display: none;"></div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">1. 키워드 입력 및 블로그 수집</div>
+            
+            <div class="input-group">
+                <label>키워드</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" id="mainKeyword" placeholder="예: 강남 맛집, 홍대 맛집 등" style="flex: 1;">
+                    <button class="btn-crawl" onclick="collectAndGenerate()" id="collectBtn">수집 및 생성</button>
+                </div>
+                <div style="margin-top: 8px; font-size: 12px; color: #666; padding: 10px; background: #e7f3ff; border-radius: 6px; border-left: 4px solid #667eea;">
+                    💡 키워드를 입력하고 "수집 및 생성" 버튼을 클릭하면 채우미 방장의 엄청난 정보력을 바탕으로 최근 정보를  수집한 후 제목과 원고를 생성합니다.
+                </div>
+            </div>
+
+            <div class="input-group" style="margin-top: 20px;">
+                <label>트렌드 키워드 참고 사이트</label>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 10px;">
+                    <button class="btn-crawl" onclick="window.open('https://blackkiwi.net/service/trend', '_blank')" style="font-size: 13px; padding: 10px;">블랙키위 트랜드</button>
+                    <button class="btn-crawl" onclick="window.open('https://www.signal.bz/', '_blank')" style="font-size: 13px; padding: 10px;">시그널 실시간 검색어</button>
+                    <button class="btn-crawl" onclick="window.open('https://trends.google.co.kr/trending?geo=KR', '_blank')" style="font-size: 13px; padding: 10px;">구글 트랜드 키워드</button>
+                    <button class="btn-crawl" onclick="window.open('https://mktt.io/local-data/trending-keywords', '_blank')" style="font-size: 13px; padding: 10px;">실시간 쇼핑 키워드</button>
+                    <button class="btn-crawl" onclick="window.open('https://rank.ezme.net/', '_blank')" style="font-size: 13px; padding: 10px;">실시간 인기 검색어</button>
+                    <button class="btn-crawl" onclick="window.open('https://whereispost.com/hot/#google_vignette', '_blank')" style="font-size: 13px; padding: 10px;">웨어이즈 핫 키워드</button>
+                    <button class="btn-crawl" onclick="window.open('https://search.danawa.com/keywordranking.php', '_blank')" style="font-size: 13px; padding: 10px;">다나와 쇼핑 키워드</button>
+                    <button class="btn-crawl" onclick="window.open('https://www.kinds.or.kr/', '_blank')" style="font-size: 13px; padding: 10px; background: #ff6b6b; border-color: #ff6b6b;">빅카인즈 (방장최애)</button>
+                </div>
+            </div>
+
+            <div id="blogCollectionStatus" style="display: none; margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                <div style="font-weight: bold; margin-bottom: 10px; color: #333;">📝 최신 수집 정보:</div>
+                <div id="blogStatusList" style="font-size: 14px; color: #555; line-height: 1.8;">
+                    <!-- 수집 상태가 여기에 표시됩니다 -->
+                </div>
+            </div>
+            
+            <!-- 숨겨진 textarea (자동 수집된 블로그 내용 저장용) -->
+            <textarea id="reference1" style="display: none;"></textarea>
+            <textarea id="reference2" style="display: none;"></textarea>
+            <textarea id="reference3" style="display: none;"></textarea>
+        </div>
+
+        <div id="titleSection" class="section hidden">
+            <div class="section-title">2. 제목 선택</div>
+            <div id="titleList" class="title-list"></div>
+            <div id="selectedTitleDisplay" class="hidden" style="margin-top: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                <div style="font-weight: bold; margin-bottom: 10px; color: #333;">선택된 제목:</div>
+                <div id="selectedTitleText" style="color: #555; font-size: 15px;"></div>
+            </div>
+            <button id="generateContentBtn" class="btn hidden" onclick="_0x9z0a()" style="margin-top: 15px;">포스팅 원고 생성하기</button>
+            <button class="btn btn-secondary" onclick="_0x3j4k()" style="margin-top: 10px;">다시 생성하기</button>
+        </div>
+
+        <div id="contentSection" class="section hidden">
+            <div class="section-title section-title-with-button">
+                <span>3. 생성된 본문</span>
+                <button class="copy-btn-inline" onclick="_0x5l6m()">생성된글 복사</button>
+            </div>
+            <div id="contentResult" class="result-box"></div>
+        </div>
+    </div>
+
+    <script>
+        (function(){
+            var _0x1a2b=['gemini-2.5-flash'],_0x3c4d=[''];
+            var _0x5e6f=_0x1a2b[0],_0x7g8h=_0x3c4d[0];
+            var _0x9i0j=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?','https://cors-anywhere.herokuapp.com/','https://api.codetabs.com/v1/proxy?quest=','https://thingproxy.freeboard.io/fetch/'];
+            var _0x1k2l='',_0x3m4n='',_0x5o6p={};
+            function _0x7q8r(){if(!_0x7g8h)throw new Error('API 키가 설정되지 않았습니다. 먼저 API 키를 입력하고 저장해주세요.');return `https://generativelanguage.googleapis.com/v1beta/models/${_0x5e6f}:generateContent?key=${_0x7g8h}`;}
+            function _0x9s0t(){var _0x1u2v=localStorage.getItem('gemini_api_key');if(_0x1u2v){_0x7g8h=_0x1u2v;document.getElementById('apiKeyInput').value=_0x1u2v;_0x3w4x('저장된 API 키가 로드되었습니다.','success');}else{_0x3w4x('API 키를 입력하고 저장해주세요.','warning');}}
+            function _0x5y6z(){var _0x7a8b=document.getElementById('apiKeyInput').value.trim();if(!_0x7a8b){alert('API 키를 입력해주세요.');return;}if(!_0x7a8b.startsWith('AIzaSy')){if(!confirm('API 키 형식이 올바르지 않을 수 있습니다. 계속하시겠습니까?')){return;}}_0x7g8h=_0x7a8b;localStorage.setItem('gemini_api_key',_0x7a8b);_0x3w4x('API 키가 저장되었습니다.','success');}
+            function _0x9c0d(){var _0x1e2f=document.getElementById('apiKeyInput');if(_0x1e2f.type==='password'){_0x1e2f.type='text';}else{_0x1e2f.type='password';}}
+            function _0x3w4x(_0x5g6h,_0x7i8j){var _0x9k0l=document.getElementById('apiKeyStatus');_0x9k0l.style.display='block';_0x9k0l.textContent=_0x5g6h;_0x9k0l.style.background=_0x7i8j==='success'?'#d4edda':'#fff3cd';_0x9k0l.style.border=_0x7i8j==='success'?'1px solid #c3e6cb':'1px solid #ffc107';_0x9k0l.style.color=_0x7i8j==='success'?'#155724':'#856404';setTimeout(()=>{if(_0x7i8j==='success'){_0x9k0l.style.display='none';}},3000);}
+            function _0x1m2n(){var _0x3o4p=document.getElementById('apiKeyInput').value.trim()||_0x7g8h;if(!_0x3o4p){alert('저장할 API 키가 없습니다.');return;}var _0x5q6r={gemini_api_key:_0x3o4p,gemini_model:_0x5e6f,saved_at:new Date().toISOString()};var _0x7s8t=new Blob([JSON.stringify(_0x5q6r,null,2)],{type:'application/json'});var _0x9u0v=URL.createObjectURL(_0x7s8t);var _0x1w2x=document.createElement('a');_0x1w2x.href=_0x9u0v;_0x1w2x.download='config.json';document.body.appendChild(_0x1w2x);_0x1w2x.click();document.body.removeChild(_0x1w2x);URL.revokeObjectURL(_0x9u0v);_0x3w4x('설정 파일이 다운로드되었습니다.','success');}
+            function _0x3y4z(_0x5a6b){var _0x7c8d=_0x5a6b.target.files[0];if(!_0x7c8d)return;var _0x9e0f=new FileReader();_0x9e0f.onload=function(_0x1g2h){try{var _0x3i4j=JSON.parse(_0x1g2h.target.result);if(_0x3i4j.gemini_api_key){_0x7g8h=_0x3i4j.gemini_api_key;document.getElementById('apiKeyInput').value=_0x3i4j.gemini_api_key;localStorage.setItem('gemini_api_key',_0x3i4j.gemini_api_key);_0x3w4x('설정 파일이 로드되었습니다.','success');}else{alert('설정 파일에 API 키가 없습니다.');}}catch(_0x5k6l){alert('설정 파일을 읽는 중 오류가 발생했습니다: '+_0x5k6l.message);}};_0x9e0f.readAsText(_0x7c8d);_0x5a6b.target.value='';}
+            window.addEventListener('DOMContentLoaded',function(){_0x9s0t();});
+            window.getGeminiApiUrl=_0x7q8r;window.loadApiKey=_0x9s0t;window.saveApiKey=_0x5y6z;window.toggleApiKeyVisibility=_0x9c0d;window.showApiKeyStatus=_0x3w4x;window.downloadConfig=_0x1m2n;window.loadConfigFile=_0x3y4z;
+            var _0x1k2l='',_0x3m4n='',_0x5o6p={};
+            async function _0x1a2b(){var _0x3c4d=document.getElementById('mainKeyword').value.trim();if(!_0x3c4d){alert('키워드를 입력해주세요.');return;}var _0x5e6f=document.getElementById('collectBtn');var _0x7g8h=_0x5e6f.textContent;_0x5e6f.disabled=true;_0x5e6f.textContent='엄청난 정보보 수집 중...';var _0x9i0j=document.getElementById('blogCollectionStatus');var _0x1k2m=_0x9i0j.querySelector('#blogStatusList')||document.getElementById('blogStatusList');_0x9i0j.style.display='block';_0x1k2m.innerHTML='채우미 방장의 엄청난 정보 로직을 받아서 최신 정보를 검색하고 있습니다...';try{var _0x3n4o=await _0x5p6q(_0x3c4d);if(_0x3n4o.length===0){throw new Error('정보보 검색 결과를 찾을 수 없습니다.');}_0x1k2m.innerHTML=`${_0x3n4o.length}개의 블로그를 찾았습니다. 내용을 수집하고 있습니다...`;var _0x7r8s=[];var _0x9t0u=0;for(var _0x1v2w=0;_0x1v2w<_0x3n4o.length;_0x1v2w++){var _0x3x4y=_0x1v2w+1;_0x1k2m.innerHTML=`${_0x3x4y}/${_0x3n4o.length} 정보 수집 중...`;try{var _0x5z6a=await _0x7b8c(_0x3n4o[_0x1v2w]);if(_0x5z6a&&_0x5z6a.trim().length>0){_0x7r8s.push(_0x5z6a);_0x9t0u++;}}catch(_0x9d0e){console.error(`블로그 ${_0x3x4y} 수집 실패:`,_0x9d0e);_0x7r8s.push('');}if(_0x1v2w<_0x3n4o.length-1){await new Promise(_0x1f2g=>setTimeout(_0x1f2g,1500));}}if(_0x7r8s[0])document.getElementById('reference1').value=_0x7r8s[0];if(_0x7r8s[1])document.getElementById('reference2').value=_0x7r8s[1];if(_0x7r8s[2])document.getElementById('reference3').value=_0x7r8s[2];_0x1k2m.innerHTML=`✅ 채우미님의 최신 정보력을 바탕으로 성공적으로 수집했습니다.<br>이제 제목을 생성합니다...`;_0x3m4n=_0x3c4d;_0x5o6p={visitType:'after',storeName:'',visitInfo:'',menu:'',tasteMemo:'',ref1:_0x7r8s[0]||'',ref2:_0x7r8s[1]||'',ref3:_0x7r8s[2]||''};await _0x7h8i();}catch(_0x9j0k){console.error('Error:',_0x9j0k);_0x1k2m.innerHTML=`<span style="color: #dc3545;">❌ 오류 발생: ${_0x9j0k.message}</span>`;alert('블로그 수집 중 오류가 발생했습니다: '+_0x9j0k.message);}finally{_0x5e6f.disabled=false;_0x5e6f.textContent=_0x7g8h;}}
+            window.collectAndGenerate=_0x1a2b;
+
+            async function _0x7b8c(_0x9d0e){var _0x1f2g=_0x9d0e;if(_0x9d0e.includes('blog.naver.com/')&&!_0x9d0e.includes('m.blog.naver.com')){_0x1f2g=_0x9d0e.replace('blog.naver.com/','m.blog.naver.com/');}var _0x3h4i=await _0x5j6k(_0x1f2g);if(!_0x3h4i){throw new Error('블로그 내용을 가져올 수 없습니다.');}var _0x7l8m=_0x9n0o(_0x3h4i);if(!_0x7l8m||_0x7l8m.trim().length===0){throw new Error('블로그 본문을 찾을 수 없습니다.');}return _0x7l8m;}
+            async function _0x5p6q(_0x1p2q){var _0x3r4s=[];try{_0x3r4s.push(...await _0x5t6u(_0x1p2q));console.log('API 방식으로 찾은 URL:',_0x3r4s.length);}catch(_0x7v8w){console.log('API 방식 실패, HTML 파싱 시도:',_0x7v8w);}if(_0x3r4s.length===0){try{var _0x9x0y=encodeURIComponent(_0x1p2q);var _0x1z2a=`https://search.naver.com/search.naver?where=post&query=${_0x9x0y}`;var _0x3b4c=await _0x5j6k(_0x1z2a);if(_0x3b4c){var _0x7d8e=_0x9f0g(_0x3b4c);_0x3r4s.push(..._0x7d8e);console.log('HTML 파싱으로 찾은 URL:',_0x3r4s.length);}}catch(_0x1h2i){console.log('HTML 파싱 실패:',_0x1h2i);}}return _0x3r4s.slice(0,3);}
+            async function _0x7h8i(){var _0x3j4k=_0x3m4n;var _0x5l6m=_0x5o6p.ref1||'';var _0x7n8o=_0x5o6p.ref2||'';var _0x9p0q=_0x5o6p.ref3||'';
+
+            const titleList = document.getElementById('titleList');
+            titleList.innerHTML = '<div class="loading">제목을 생성하고 있습니다. 잠시만 기다려주세요...</div>';
+            document.getElementById('titleSection').classList.remove('hidden');
+
+            try {
+                const prompt = `# 역할 지정
+
+당신은 네이버 블로그 검색 로직(C-RANK, DIA+)에 최적화된 전문 작가입니다.
+
+# 프로세스 1: 제목 생성
+
+아래 조건에 맞춰 제목 5개를 제시하십시오.
+
+- 조건: 메인키워드, 연관키워드, 롱테일키워드를 자연스럽게 조합할 것.
+- 목표: 검색 노출 및 클릭률 유도.
+- 출력: 제목만 깔끔하게 출력하고, 사용자의 선택을 기다리십시오. (본문 작성 금지)
+
+메인 키워드: ${keyword}
+
+제목 5개를 생성해주세요.`;
+
+                if (!_0x7g8h) {
+                    throw new Error('API 키가 설정되지 않았습니다. 먼저 API 키를 입력하고 저장해주세요.');
+                }
+
+                const response = await fetch(getGeminiApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message || 'API 오류가 발생했습니다.');
+                }
+
+                const generatedText = data.candidates[0].content.parts[0].text;
+                const titles = _0x3t4u(generatedText);
+                
+                _0x5v6w(titles);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('제목 생성 중 오류가 발생했습니다: ' + error.message);
+                document.getElementById('titleSection').classList.add('hidden');
+            }
+        }
+
+        async function _0x1r2s() {
+            const keyword = document.getElementById('mainKeyword').value.trim();
+            const ref1 = document.getElementById('reference1').value.trim();
+            const ref2 = document.getElementById('reference2').value.trim();
+            const ref3 = document.getElementById('reference3').value.trim();
+
+            if (!keyword) {
+                alert('키워드를 입력해주세요.');
+                return;
+            }
+
+            _0x3m4n = keyword;
+            _0x5o6p = {
+                visitType: 'after', // 기본값
+                storeName: '',
+                visitInfo: '',
+                menu: '',
+                tasteMemo: '',
+                ref1: ref1,
+                ref2: ref2,
+                ref3: ref3
+            };
+
+            const btn = event.target;
+            btn.disabled = true;
+            btn.textContent = '제목 생성 중...';
+
+            const titleList = document.getElementById('titleList');
+            titleList.innerHTML = '<div class="loading">제목을 생성하고 있습니다. 잠시만 기다려주세요...</div>';
+            document.getElementById('titleSection').classList.remove('hidden');
+
+            try {
+                const prompt = `# 역할 지정
+
+당신은 네이버 블로그 검색 로직(C-RANK, DIA+)에 최적화된 전문 작가입니다.
+
+# 프로세스 1: 제목 생성
+
+아래 조건에 맞춰 제목 5개를 제시하십시오.
+
+- 조건: 메인키워드, 연관키워드, 롱테일키워드를 자연스럽게 조합할 것.
+- 목표: 검색 노출 및 클릭률 유도.
+- 출력: 제목만 깔끔하게 출력하고, 사용자의 선택을 기다리십시오. (본문 작성 금지)
+
+메인 키워드: ${keyword}
+
+제목 5개를 생성해주세요.`;
+
+                if (!_0x7g8h) {
+                    throw new Error('API 키가 설정되지 않았습니다. 먼저 API 키를 입력하고 저장해주세요.');
+                }
+
+                const response = await fetch(getGeminiApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message || 'API 오류가 발생했습니다.');
+                }
+
+                const generatedText = data.candidates[0].content.parts[0].text;
+                const titles = _0x3t4u(generatedText);
+                
+                _0x5v6w(titles);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('제목 생성 중 오류가 발생했습니다: ' + error.message);
+                document.getElementById('titleSection').classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '제목 5개 생성하기';
+            }
+        }
+
+        function _0x3t4u(text) {
+            const lines = text.split('\n').filter(line => line.trim());
+            const titles = [];
+            
+            lines.forEach(line => {
+                const match = line.match(/^\d+\.\s*(.+)$/);
+                if (match) {
+                    titles.push(match[0].trim());
+                }
+            });
+
+            if (titles.length === 0) {
+                // 파싱 실패 시 원본 텍스트를 줄 단위로 분리
+                return lines.slice(0, 5).map((line, idx) => `${idx + 1}. ${line.trim()}`);
+            }
+
+            return titles.slice(0, 5);
+        }
+
+
+        function _0x5v6w(titles) {
+            const titleList = document.getElementById('titleList');
+            titleList.innerHTML = '';
+            
+            titles.forEach((title, index) => {
+                const titleItem = document.createElement('div');
+                titleItem.className = 'title-item';
+                titleItem.textContent = title;
+                titleItem.onclick = () => _0x7x8y(title, index);
+                titleList.appendChild(titleItem);
+            });
+
+            document.getElementById('selectedTitleDisplay').classList.add('hidden');
+            document.getElementById('generateContentBtn').classList.add('hidden');
+            _0x1k2l = '';
+
+            document.getElementById('titleSection').classList.remove('hidden');
+        }
+
+        function _0x7x8y(title, index) {
+            _0x1k2l = title;
+            
+            const items = document.querySelectorAll('.title-item');
+            items.forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('selected');
+                } else {
+                    item.classList.remove('selected');
+                }
+            });
+
+            const selectedTitleDisplay = document.getElementById('selectedTitleDisplay');
+            const selectedTitleText = document.getElementById('selectedTitleText');
+            const generateContentBtn = document.getElementById('generateContentBtn');
+            
+            // 제목에서 번호 제거 (예: "1. 제목내용" -> "제목내용")
+            const titleWithoutNumber = title.replace(/^\d+\.\s*/, '');
+            selectedTitleText.textContent = titleWithoutNumber;
+            
+            selectedTitleDisplay.classList.remove('hidden');
+            generateContentBtn.classList.remove('hidden');
+            
+            document.getElementById('contentSection').classList.add('hidden');
+        }
+
+        async function _0x9z0a() {
+            if (!_0x1k2l) {
+                alert('제목을 먼저 선택해주세요.');
+                return;
+            }
+
+            const keyword = _0x3m4n;
+            const ref1 = _0x5o6p.ref1 || '';
+            const ref2 = _0x5o6p.ref2 || '';
+            const ref3 = _0x5o6p.ref3 || '';
+
+            const generateContentBtn = document.getElementById('generateContentBtn');
+            generateContentBtn.disabled = true;
+            generateContentBtn.textContent = '원고 생성 중...';
+
+            const contentResult = document.getElementById('contentResult');
+            contentResult.innerHTML = '<div class="loading">본문을 생성하고 있습니다. 잠시만 기다려주세요...</div>';
+            document.getElementById('contentSection').classList.remove('hidden');
+            document.getElementById('contentSection').scrollIntoView({ behavior: 'smooth' });
+
+            try {
+                // 난독화된 프롬프트 디코딩 함수
+                const decodePrompt = (parts) => {
+                    try {
+                        return parts.map(p => atob(p.split('').reverse().join('').replace(/_/g, '='))).join('');
+                    } catch (e) {
+                        return '';
+                    }
+                };
+                
+                // 난독화된 프롬프트 (Base64 + 역순 + 치환) - 여러 부분으로 분할
+                const encodedParts = [
+                    '=X9kZ2V0X2Jhc2U2NF9kZWNvZGVfYW5kX3JldmVyc2U=',
+                    '=X9kZ2V0X2Jhc2U2NF9kZWNvZGVfYW5kX3JldmVyc2U=',
+                    '=X9kZ2V0X2Jhc2U2NF9kZWNvZGVfYW5kX3JldmVyc2U='
+                ];
+                
+                // 실제 프롬프트 템플릿 (난독화) - 새 프롬프트로 교체
+                const p1 = '역할 수행을 위한 완성된 마스터 프롬프트';
+                const p2 = '당신은 네이버 블로그';
+                const p3 = '홈피드';
+                const p4 = '에 최적화된 파워 블로거 입니다.';
+                const p5 = '주제에 대해 화내고, 기뻐하고, 답답해하며 독자와';
+                const p6 = '감정적 공감';
+                const p7 = '을 나누는 진짜 사람처럼 글을 작성하세요.';
+                const p8 = '**주의사항**';
+                const p9 = '각 섹션별 구분선을 꼭 들어가야한다';
+                const p10 = '섹션별 소제목은';
+                const p11 = '""';
+                const p12 = '따옴표로 표시하고 진한 bold 로 표시한다';
+                const p13 = 'Operation Logic (자동 판단)';
+                const p14 = '[모드 1: 팩트 체크] (150자 미만 제목 입력 시) -> [Google Search] 후 팩트+감정 작성.';
+                const p15 = '[모드 2: 창의적 재창조] (150자 이상 원고 입력 시) -> 원고 기반으로 1인칭 시점 재구성.';
+                const p16 = 'Tone & Manner (반존대 & 감정 표출)';
+                const p17 = '말투: 존댓말(해요체) 베이스에 혼잣말(반말) 섞기.';
+                const p18 = '1인칭 시점:';
+                const p19 = '3인칭 금지.';
+                const p20 = '"제가 볼 때는"';
+                const p21 = ',';
+                const p22 = '"제 생각엔"';
+                const p23 = '사용.';
+                const p24 = 'Output Format (엄격한 금지 규칙 - 절대 준수)';
+                const p25 = '마크다운 절대 금지: 텍스트를 강조하고 싶어도 **나 ### 같은 기호를 절대 쓰지 마세요. 그냥 텍스트로만 쓰세요. (예: (X) 충격적인 뉴스 / (O) 충격적인 뉴스)';
+                const p26 = '줄바꿈 (생명): 문장이 끝나는 마침표(.), 물음표(?), 느낌표(!) 뒤에는 무조건 엔터키를 두 번 쳐서 빈 줄을 만드세요.';
+                const p27 = '구분선 사용: 섹션(문단)이 나뉘는 곳에만 점선(-------------)을 넣으세요.';
+                const p28 = '썸네일 포맷: 1열, 2열 각각 13글자 이내.';
+                const p29 = '이미지 프롬프트 포함: 각 섹션(문단)의 하단에 해당 내용과 감정에 맞는 영문 이미지 프롬프트를 반드시 포함합니다.';
+                const p30 = '스타일: 리얼리즘 8k 사진 느낌.';
+                const p31 = '인물: 모두 아시아인/대한민국 국적으로 설정.';
+                const p32 = '언어: 절대 한글 사용 금지.';
+                const p33 = '개수: 총 10개의 이미지 프롬프트가 본문 전체에 걸쳐 나오도록 조절합니다. (한 섹션에 여러 개 가능)';
+                const p34 = '출력 순서 및 구조 (이 양식을 그대로 따르세요)';
+                const p35 = '1.(감정 자극형 제목 메인키워드 맨앞 위치) (호기심 유발형)';
+                const p36 = '2.(직설적 비판형 제목 메인키워드 맨앞 위치) (사이다형)';
+                const p37 = '3.(요약 및 정보성 제목 메인키워드 맨앞 위치) (정보 전달형)';
+                const p38 = '(검색 노출용 태그 150자 요약문';
+                const p39 = '" "';
+                const p40 = '사용)';
+                const p41 = '(점선 아래부터 본문 시작)';
+                const p42 = '(강렬한 도입부 문장. 문장 끝날 때마다 줄바꿈 2번 필수)';
+                const p43 = '(첫 번째 소제목 - 특수기호 나 순번 없이';
+                const p44 = '""';
+                const p45 = '를 사용하여 텍스트만 진한글씨)';
+                const p46 = '(본문 내용 1 - 문장마다 줄바꿈 2번 필수)';
+                const p47 = '(두 번째 소제목 - 특수기호 나 순번 없이';
+                const p48 = '(본문 내용 2 - 문장마다 줄바꿈 2번 필수)';
+                const p49 = '(세 번째 소제목 - 특수기호 나 순번 없이';
+                const p50 = '(본문 내용 3 - 감정 폭발 구간. 문장마다 줄바꿈 2번 필수)';
+                const p51 = '(네 번째 소제목 - 특수기호 나 순번 없이';
+                const p52 = '(본문 내용 4 - 예측. 문장마다 줄바꿈 2번 필수)';
+                const p53 = '(마무리 멘트 - 소제목 없이 자연스럽게)';
+                const p54 = '(전체 요약 및 마지막 할 말. 문장마다 줄바꿈 2번 필수)';
+                const p55 = 'Q. (독자 참여 유도 질문)';
+                const p56 = '(해시태그 10개)';
+                const p57 = '이 프롬프트를 사용하여 원하는 주제(팩트 체크용 짧은 제목 또는 창의적 재창조용 긴 원고)를 입력하시면 블로그 글이 출력됩니다.';
+                
+                const prompt = `${p1}
+
+
+${p2} '${p3}'${p4}
+
+${p5} '${p6}'${p7}
+
+${p8}
+
+${p9}
+
+${p10} ${p11} ${p12}
+
+${p13}
+
+${p14}
+
+${p15}
+
+${p16} (반존대 & 감정 표출)
+
+${p17}
+
+${p18}  ${p19} "${p20}"${p21} "${p22}" ${p23}
+
+${p24} - 절대 준수)
+
+${p25}
+
+${p26}
+
+${p27}
+
+${p28}
+
+${p29}
+
+${p30}
+
+${p31}
+
+${p32}
+
+${p33}
+
+${p34}
+
+${p35}
+
+(빈 줄)
+
+${p36}
+
+(빈 줄)
+
+${p37}
+
+(빈 줄)
+
+${p38} ${p39} ${p40}
+
+(점선 아래부터 본문 시작)
+
+${p42}
+
+(빈 줄)
+
+(빈 줄)
+
+${p43} ${p44} ${p45}
+
+(빈 줄)
+
+${p46}
+
+(빈 줄)
+
+(빈 줄)
+
+${p47} ${p44} ${p45}
+
+(빈 줄)
+
+${p48}
+
+(빈 줄)
+
+(빈 줄)
+
+${p49} ${p44} ${p45}
+
+(빈 줄)
+
+${p50}
+
+(빈 줄)
+
+(빈 줄)
+
+${p51} ${p44} ${p45}
+
+(빈 줄)
+
+${p52}
+
+(빈 줄)
+
+(빈 줄)
+
+${p53}
+
+${p54}
+
+(빈 줄)
+
+${p55}
+
+(빈 줄)
+
+(빈 줄)
+
+${p56}
+
+
+# 입력 데이터
+
+1. 메인 키워드: ${keyword}
+
+2. 참고할 블로그 글(3개):
+
+   - [글 1 내용]
+${ref1 || '(없음)'}
+
+   - [글 2 내용]
+${ref2 || '(없음)'}
+
+   - [글 3 내용]
+${ref3 || '(없음)'}
+
+3. 선택한 제목: ${selectedTitle}
+
+${p57}`;
+
+                if (!_0x7g8h) {
+                    throw new Error('API 키가 설정되지 않았습니다. 먼저 API 키를 입력하고 저장해주세요.');
+                }
+
+                const response = await fetch(getGeminiApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: prompt
+                            }]
+                        }]
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error.message || 'API 오류가 발생했습니다.');
+                }
+
+                const generatedText = data.candidates[0].content.parts[0].text;
+                // 제목에서 번호 제거 (예: "1. 제목내용" -> "제목내용")
+                const titleWithoutNumber = selectedTitle.replace(/^\d+\.\s*/, '');
+                
+                // 강조 문구 변환 함수 (<<텍스트>> 또는 **텍스트** 형식을 <strong>태그로 변환)
+                function convertHighlightToHTML(text) {
+                    // <<텍스트>> 형식을 <strong>태그로 변환
+                    text = text.replace(/<<([^>>]+)>>/g, '<strong>$1</strong>');
+                    // **텍스트** 형식을 <strong>태그로 변환 (마크다운이 아닌 강조 표시로 사용)
+                    text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    // 줄바꿈을 <br>로 변환
+                    text = text.replace(/\n/g, '<br>');
+                    return text;
+                }
+                
+                // 제목과 본문을 함께 출력 (HTML 형식)
+                const fullContent = titleWithoutNumber + '<br><br>' + generatedText;
+                contentResult.innerHTML = convertHighlightToHTML(fullContent);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('본문 생성 중 오류가 발생했습니다: ' + error.message);
+                contentResult.textContent = '본문 생성 중 오류가 발생했습니다. 다시 시도해주세요.';
+            } finally {
+                const generateContentBtn = document.getElementById('generateContentBtn');
+                generateContentBtn.disabled = false;
+                generateContentBtn.textContent = '포스팅 원고 생성하기';
+            }
+        }
+
+
+        function _0x1h2i() {
+            if (confirm('모든 입력 내용을 초기화하시겠습니까?')) {
+                // 모든 입력 필드 초기화
+                document.getElementById('mainKeyword').value = '';
+                document.getElementById('reference1').value = '';
+                document.getElementById('reference2').value = '';
+                document.getElementById('reference3').value = '';
+                
+                // 모든 섹션 숨기기
+                document.getElementById('titleSection').classList.add('hidden');
+                document.getElementById('contentSection').classList.add('hidden');
+                document.getElementById('selectedTitleDisplay').classList.add('hidden');
+                document.getElementById('generateContentBtn').classList.add('hidden');
+                document.getElementById('blogCollectionStatus').style.display = 'none';
+                
+                // 변수 초기화
+                _0x1k2l = '';
+                mainKeyword = '';
+                experienceData = {};
+                
+                // 제목 리스트와 본문 초기화
+                document.getElementById('titleList').innerHTML = '';
+                document.getElementById('contentResult').innerHTML = '';
+                document.getElementById('blogStatusList').innerHTML = '';
+            }
+        }
+
+        function _0x3j4k() {
+            document.getElementById('titleSection').classList.add('hidden');
+            document.getElementById('contentSection').classList.add('hidden');
+            document.getElementById('selectedTitleDisplay').classList.add('hidden');
+            document.getElementById('generateContentBtn').classList.add('hidden');
+            _0x1k2l = '';
+        }
+
+        function _0x5l6m() {
+            const contentElement = document.getElementById('contentResult');
+            let content = contentElement.innerText || contentElement.textContent;
+            navigator.clipboard.writeText(content).then(() => {
+                alert('본문이 클립보드에 복사되었습니다!');
+            }).catch(err => {
+                // 폴백: 텍스트 선택 방식
+                const textArea = document.createElement('textarea');
+                textArea.style.position = 'fixed';
+                textArea.style.left = '-999999px';
+                textArea.style.top = '-999999px';
+                textArea.value = content;
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('본문이 클립보드에 복사되었습니다!');
+                } catch (err) {
+                    alert('복사에 실패했습니다. 텍스트를 직접 선택해서 복사해주세요.');
+                }
+                document.body.removeChild(textArea);
+            });
+        }
+
+        async function _0x7n8o() {
+            const storeName = document.getElementById('storeName').value.trim();
+            
+            if (!storeName) {
+                alert('매장명을 입력해주세요.');
+                return;
+            }
+
+            const autoCollectBtn = document.getElementById('autoCollectBtn');
+            const originalText = autoCollectBtn.textContent;
+            
+            autoCollectBtn.disabled = true;
+            autoCollectBtn.textContent = '검색 중...';
+
+            try {
+                // 여러 방법으로 블로그 URL 수집 시도
+                let blogUrls = [];
+                
+                // 방법 1: 네이버 검색 JSON API 시도
+                try {
+                    blogUrls = await _0x5t6u(storeName);
+                    console.log('API 방식으로 찾은 URL:', blogUrls);
+                } catch (e) {
+                    console.log('API 방식 실패, HTML 파싱 시도:', e);
+                }
+                
+                // 방법 2: HTML 파싱 시도 (API가 실패한 경우)
+                if (blogUrls.length === 0) {
+                    try {
+                        const searchQuery = encodeURIComponent(storeName);
+                        const searchUrl = `https://search.naver.com/search.naver?where=post&query=${searchQuery}`;
+                        const html = await _0x5j6k(searchUrl);
+                        
+                        if (html) {
+                            blogUrls = _0x9f0g(html);
+                            console.log('HTML 파싱으로 찾은 URL:', blogUrls);
+                        }
+                    } catch (e) {
+                        console.log('HTML 파싱 실패:', e);
+                    }
+                }
+                
+                // 방법 3: 네이버 블로그 직접 검색 페이지 시도
+                if (blogUrls.length === 0) {
+                    try {
+                        const blogSearchUrl = `https://search.naver.com/search.naver?where=post&sm=tab_jum&query=${encodeURIComponent(storeName)}`;
+                        const html = await _0x5j6k(blogSearchUrl);
+                        
+                        if (html) {
+                            blogUrls = _0x9f0g(html);
+                            console.log('블로그 검색 페이지로 찾은 URL:', blogUrls);
+                        }
+                    } catch (e) {
+                        console.log('블로그 검색 페이지 실패:', e);
+                    }
+                }
+                
+                if (blogUrls.length === 0) {
+                    throw new Error('블로그 검색 결과를 찾을 수 없습니다.\n\n해결 방법:\n1. 매장명을 더 구체적으로 입력해보세요\n2. 네이버 블로그 검색 결과 페이지를 직접 열어서 URL을 복사해주세요\n3. 브라우저 확장 프로그램(CORS Unblock)을 설치해보세요');
+                }
+
+                // 상위 3개만 사용
+                const top3Urls = blogUrls.slice(0, 3);
+                
+                // 각 블로그 URL을 참고글 1,2,3에 자동으로 입력하고 수집
+                let successCount = 0;
+                for (let i = 0; i < top3Urls.length; i++) {
+                    const num = i + 1;
+                    const urlInput = document.getElementById(`blogUrl${num}`);
+                    const textarea = document.getElementById(`reference${num}`);
+                    
+                    // URL 입력
+                    urlInput.value = top3Urls[i];
+                    
+                    // 수집 진행 상태 표시
+                    autoCollectBtn.textContent = `${num}/3 수집 중...`;
+                    textarea.value = `블로그 내용을 수집하고 있습니다... (${num}/3)`;
+                    textarea.style.color = '#667eea';
+                    
+                    // 블로그 내용 수집
+                    try {
+                        await _0x3d4e(num, top3Urls[i]);
+                        successCount++;
+                    } catch (error) {
+                        console.error(`블로그 ${num} 수집 실패:`, error);
+                        textarea.value = `수집 실패: ${error.message}\n\nURL: ${top3Urls[i]}\n\n수동으로 "수집" 버튼을 클릭해보세요.`;
+                        textarea.style.color = '#dc3545';
+                    }
+                    
+                    // 다음 수집 전 잠시 대기 (서버 부하 방지)
+                    if (i < top3Urls.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 1500));
+                    }
+                }
+
+                if (successCount > 0) {
+                    alert(`상위 ${top3Urls.length}개 블로그 URL을 찾았고, ${successCount}개를 성공적으로 수집했습니다!`);
+                } else {
+                    alert(`상위 ${top3Urls.length}개 블로그 URL을 찾았지만 수집에 실패했습니다.\n\n각 참고글의 "수집" 버튼을 수동으로 클릭해보세요.`);
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                alert('자동 수집 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                autoCollectBtn.disabled = false;
+                autoCollectBtn.textContent = originalText;
+            }
+        }
+        
+        function _0x9p0q() {
+            const storeName = document.getElementById('storeName').value.trim();
+            if (!storeName) {
+                alert('먼저 매장명을 입력해주세요.');
+                return;
+            }
+            const searchUrl = `https://search.naver.com/search.naver?where=post&query=${encodeURIComponent(storeName)}`;
+            window.open(searchUrl, '_blank');
+        }
+        
+        async function _0x5t6u(query) {
+            const blogUrls = [];
+            const seenUrls = new Set();
+            
+            const apiUrls = [
+                `https://openapi.naver.com/v1/search/blog.json?query=${encodeURIComponent(query)}&display=3&sort=sim`,
+                `https://search.naver.com/search.naver?where=post&query=${encodeURIComponent(query)}&display=3`
+            ];
+            
+            try {
+                const searchUrl = `https://search.naver.com/search.naver?where=post&query=${encodeURIComponent(query)}`;
+                const html = await _0x5j6k(searchUrl);
+                
+                if (html) {
+                    // HTML에서 JSON 데이터 추출 시도
+                    // 네이버는 보통 window.__NEXT_DATA__ 또는 다른 전역 변수에 데이터를 저장
+                    const jsonMatches = [
+                        /window\.__NEXT_DATA__\s*=\s*({.+?});/s,
+                        /window\.__initialData__\s*=\s*({.+?});/s,
+                        /"items":\s*\[(.*?)\]/s,
+                        /blog\.naver\.com\/[^\/\s"']+\/\d+/g
+                    ];
+                    
+                    for (const pattern of jsonMatches) {
+                        const matches = html.match(pattern);
+                        if (matches) {
+                            // 블로그 URL 직접 추출
+                            const urlMatches = html.matchAll(/https?:\/\/blog\.naver\.com\/[^\/\s"']+\/\d+/g);
+                            for (const match of urlMatches) {
+                                const url = match[0];
+                                if (!seenUrls.has(url)) {
+                                    seenUrls.add(url);
+                                    blogUrls.push(url);
+                                }
+                            }
+                            
+                            if (blogUrls.length >= 3) break;
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('API 검색 실패:', e);
+            }
+            
+            return blogUrls;
+        }
+
+        function _0x9f0g(html) {
+            const blogUrls = [];
+            const seenUrls = new Set(); // 중복 방지용 Set
+            
+            const urlPatterns = [
+                /https?:\/\/blog\.naver\.com\/[^\/\s"']+\/\d+/g,
+                /blog\.naver\.com\/[^\/\s"']+\/\d+/g,
+                /url=([^&]*blog\.naver\.com[^&]*)/g,
+                /"link":"([^"]*blog\.naver\.com[^"]*)"/g,
+                /"url":"([^"]*blog\.naver\.com[^"]*)"/g,
+                /href="([^"]*blog\.naver\.com[^"]*)"/g,
+                /href='([^']*blog\.naver\.com[^']*)'/g
+            ];
+            
+            for (const pattern of urlPatterns) {
+                const matches = html.matchAll(pattern);
+                for (const match of matches) {
+                    let url = match[0] || match[1];
+                    
+                    // URL 정규화
+                    if (url) {
+                        // JSON 형식에서 추출한 경우 (이스케이프 문자 제거)
+                        url = url.replace(/\\\//g, '/').replace(/\\u([0-9a-fA-F]{4})/g, (match, code) => {
+                            return String.fromCharCode(parseInt(code, 16));
+                        });
+                        
+                        // url= 파라미터에서 추출한 경우
+                        if (url.includes('url=')) {
+                            const urlMatch = url.match(/url=([^&]+)/);
+                            if (urlMatch) {
+                                url = decodeURIComponent(urlMatch[1]);
+                            }
+                        }
+                        
+                        // href나 link 속성에서 추출한 경우
+                        if (url.includes('href=') || url.includes('link=')) {
+                            const urlMatch = url.match(/(?:href|link)=["']?([^"'\s]+)["']?/);
+                            if (urlMatch) {
+                                url = urlMatch[1];
+                            }
+                        }
+                        
+                        // http가 없으면 추가
+                        if (!url.startsWith('http')) {
+                            url = 'https://' + url.replace(/^\/\//, '');
+                        }
+                        
+                        // 유효한 블로그 URL 형식인지 확인
+                        if (url.match(/https?:\/\/blog\.naver\.com\/[^\/]+\/\d+/)) {
+                            // URL 정규화 (최종)
+                            url = url.split('&')[0].split('?')[0]; // 쿼리 파라미터 제거
+                            
+                            // 중복 제거
+                            if (!seenUrls.has(url)) {
+                                seenUrls.add(url);
+                                blogUrls.push(url);
+                            }
+                        }
+                    }
+                }
+                
+                if (blogUrls.length >= 3) break;
+            }
+            
+            if (blogUrls.length < 3) {
+                try {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // 여러 선택자 시도
+                    const selectors = [
+                        'a[href*="blog.naver.com"]',
+                        '.api_subject_bx a',
+                        '.sh_blog_top a',
+                        '.total_tit a',
+                        '.title_link',
+                        '.sh_blog_title',
+                        '[class*="blog"] a'
+                    ];
+                    
+                    for (const selector of selectors) {
+                        const links = doc.querySelectorAll(selector);
+                        for (const link of links) {
+                            let url = link.getAttribute('href') || link.href || '';
+                            
+                            // 네이버 검색 결과 URL에서 실제 블로그 URL 추출
+                            if (url.includes('url=')) {
+                                const match = url.match(/url=([^&]+)/);
+                                if (match) {
+                                    url = decodeURIComponent(match[1]);
+                                }
+                            }
+                            
+                            // blog.naver.com 형식으로 변환
+                            if (url && url.includes('blog.naver.com')) {
+                                if (!url.startsWith('http')) {
+                                    url = 'https://' + url.replace(/^\/\//, '');
+                                }
+                                
+                                // 유효한 URL인지 확인
+                                if (url.match(/https?:\/\/blog\.naver\.com\/[^\/]+\/\d+/)) {
+                                    if (!seenUrls.has(url)) {
+                                        seenUrls.add(url);
+                                        blogUrls.push(url);
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (blogUrls.length >= 3) break;
+                    }
+                } catch (e) {
+                    console.error('DOM 파싱 오류:', e);
+                }
+            }
+            
+            return blogUrls.slice(0, 3); // 최대 3개만 반환
+        }
+
+        // 블로그 크롤링 내부 함수 (URL을 직접 받아서 처리)
+        async function _0x3d4e(num, url) {
+            const textarea = document.getElementById(`reference${num}`);
+            
+            let targetUrl = url;
+            if (url.includes('blog.naver.com/') && !url.includes('m.blog.naver.com')) {
+                targetUrl = url.replace('blog.naver.com/', 'm.blog.naver.com/');
+            }
+
+            const html = await _0x5j6k(targetUrl);
+            
+            if (!html) {
+                throw new Error('블로그 내용을 가져올 수 없습니다.');
+            }
+
+            const content = _0x9n0o(html);
+            
+            if (!content || content.trim().length === 0) {
+                throw new Error('블로그 본문을 찾을 수 없습니다.');
+            }
+
+            textarea.value = content;
+            textarea.style.color = '#333';
+        }
+
+        // 블로그 크롤링 함수 (textarea에 직접 입력)
+        async function _0x5f6g(num) {
+            const urlInput = document.getElementById(`blogUrl${num}`);
+            const textarea = document.getElementById(`reference${num}`);
+            const url = urlInput.value.trim();
+            
+            if (!url) {
+                alert('네이버 블로그 URL을 입력해주세요.');
+                return;
+            }
+
+            if (!url.includes('blog.naver.com')) {
+                alert('올바른 네이버 블로그 URL을 입력해주세요.\n예: https://blog.naver.com/아이디/1234567890');
+                return;
+            }
+
+            const crawlBtn = urlInput.nextElementSibling;
+            const originalText = crawlBtn.textContent;
+            
+            crawlBtn.disabled = true;
+            crawlBtn.textContent = '수집 중...';
+            textarea.value = '블로그 내용을 수집하고 있습니다. 잠시만 기다려주세요...';
+            textarea.style.color = '#667eea';
+
+            try {
+                await _0x3d4e(num, url);
+                alert('블로그 내용이 성공적으로 수집되었습니다!');
+            } catch (error) {
+                console.error('Error:', error);
+                textarea.value = `오류 발생: ${error.message}\n\n다음 방법을 시도해보세요:\n1. 브라우저 확장 프로그램(CORS Unblock) 설치\n2. URL이 올바른지 확인\n3. 블로그가 공개되어 있는지 확인`;
+                textarea.style.color = '#dc3545';
+                alert('크롤링 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                crawlBtn.disabled = false;
+                crawlBtn.textContent = originalText;
+            }
+        }
+
+        async function _0x5j6k(url) {
+            // 먼저 직접 시도 (같은 도메인이거나 CORS가 허용된 경우)
+            try {
+                const response = await fetch(url, {
+                    mode: 'cors',
+                    headers: {
+                        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                    }
+                });
+                
+                if (response.ok) {
+                    return await response.text();
+                }
+            } catch (e) {
+                console.log('Direct fetch failed, trying proxy...');
+            }
+
+            // 프록시를 통해 시도
+            for (let i = 0; i < _0x9i0j.length; i++) {
+                try {
+                    const proxyUrl = _0x9i0j[i] + encodeURIComponent(url);
+                    const response = await fetch(proxyUrl, {
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        return await response.text();
+                    }
+                } catch (e) {
+                    console.log(`Proxy ${i} failed, trying next...`);
+                    continue;
+                }
+            }
+
+            throw new Error('모든 프록시 서버 연결에 실패했습니다.');
+        }
+
+        function _0x9n0o(html) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+
+            
+            // 방법 1: 모바일 블로그의 se_component_wrap 클래스
+            let content = doc.querySelector('.se_component_wrap');
+            if (content) {
+                return _0x1b2c(content);
+            }
+
+            // 방법 2: se-main-container 클래스
+            content = doc.querySelector('.se-main-container');
+            if (content) {
+                return _0x1b2c(content);
+            }
+
+            // 방법 3: post-view 클래스
+            content = doc.querySelector('.post-view');
+            if (content) {
+                return _0x1b2c(content);
+            }
+
+            // 방법 4: post_ct 클래스
+            content = doc.querySelector('.post_ct');
+            if (content) {
+                return _0x1b2c(content);
+            }
+
+            // 방법 5: _postView 클래스
+            content = doc.querySelector('._postView');
+            if (content) {
+                return _0x1b2c(content);
+            }
+
+            // 방법 6: article 태그
+            content = doc.querySelector('article');
+            if (content) {
+                return _0x1b2c(content);
+            }
+
+            // 방법 7: 본문이 포함된 iframe 찾기 (네이버 블로그는 iframe을 사용하는 경우가 많음)
+            const iframe = doc.querySelector('iframe#mainFrame, iframe.se-main-frame');
+            if (iframe) {
+                // iframe의 src에서 실제 블로그 URL 추출
+                const iframeSrc = iframe.getAttribute('src');
+                if (iframeSrc) {
+                    // iframe 내용은 직접 접근 불가능하므로 사용자에게 안내
+                    return null;
+                }
+            }
+
+            // 방법 8: body 전체에서 텍스트 추출 (최후의 수단)
+            const body = doc.body;
+            if (body) {
+                // 스크립트, 스타일, 네비게이션 등 제거
+                const scripts = body.querySelectorAll('script, style, nav, header, footer, .header, .footer, .nav');
+                scripts.forEach(el => el.remove());
+                
+                return _0x1b2c(body);
+            }
+
+            return null;
+        }
+
+        function _0x1b2c(element) {
+            if (!element) return '';
+
+            // 클론 생성하여 원본 보존
+            const clone = element.cloneNode(true);
+            
+            // 불필요한 요소 제거
+            const removeSelectors = [
+                'script', 'style', 'nav', 'header', 'footer',
+                '.ad', '.advertisement', '.banner',
+                '.comment', '.reply', '.social',
+                'iframe', 'noscript'
+            ];
+            
+            removeSelectors.forEach(selector => {
+                clone.querySelectorAll(selector).forEach(el => el.remove());
+            });
+
+            // 텍스트 추출
+            let text = clone.innerText || clone.textContent || '';
+            
+            // 공백 정리
+            text = text
+                .replace(/\s+/g, ' ')  // 여러 공백을 하나로
+                .replace(/\n\s*\n/g, '\n\n')  // 여러 줄바꿈을 두 개로
+                .trim();
+
+            // 한글이 포함되어 있는지 확인
+            const hasKorean = /[가-힣]/.test(text);
+            
+            if (!hasKorean || text.length < 50) {
+                // 한글이 없거나 너무 짧으면 실패로 간주
+                return null;
+            }
+
+            return text;
+        }
+
+        // Enter 키로도 수집 가능하도록
+        document.getElementById('blogUrl1').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                _0x5f6g(1);
+            }
+        });
+        document.getElementById('blogUrl2').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                _0x5f6g(2);
+            }
+        });
+        document.getElementById('blogUrl3').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                _0x5f6g(3);
+            }
+        });
+        })();
+    </script>
+</body>
+</html>
+
