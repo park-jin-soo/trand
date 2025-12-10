@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>채우미 트랜드 원고생성기</title>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -270,6 +271,89 @@
             display: none;
         }
 
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #888;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 700px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 0;
+        }
+
+        .close-modal {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-modal:hover,
+        .close-modal:focus {
+            color: #000;
+        }
+
+        .guide-step {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .guide-step-title {
+            font-weight: bold;
+            font-size: 16px;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .guide-step-content {
+            color: #555;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
         .warning {
             background: #fff3cd;
             border: 1px solid #ffc107;
@@ -413,7 +497,59 @@
             <div id="apiKeyStatus" style="margin-top: 10px; padding: 10px; border-radius: 8px; display: none;"></div>
         </div>
 
-        <div class="section">
+        <div class="section" style="background: #e8f5e9; border-left-color: #4caf50;">
+            <div class="section-title">생성 방식 선택</div>
+            
+            <div class="radio-group" style="margin-bottom: 20px;">
+                <div class="radio-item">
+                    <input type="radio" id="singleMode" name="generationMode" value="single" checked onchange="toggleGenerationMode()">
+                    <label for="singleMode">단건 생성</label>
+                </div>
+                <div class="radio-item">
+                    <input type="radio" id="batchMode" name="generationMode" value="batch" onchange="toggleGenerationMode()">
+                    <label for="batchMode">대량 생성</label>
+                </div>
+            </div>
+
+            <!-- 대량 생성 UI (대량 선택 시 표시) -->
+            <div id="batchGenerationUI" style="display: none;">
+                <div class="input-group">
+                    <label>파일 업로드 (엑셀 또는 TXT) - 선택사항</label>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <input type="file" id="batchFileInput" accept=".xlsx,.xls,.txt,.csv" style="flex: 1; padding: 10px;">
+                        <button class="btn-crawl" onclick="selectOutputFolder()" id="selectFolderBtn">저장 폴더 선택</button>
+                    </div>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666; padding: 10px; background: #e7f3ff; border-radius: 6px; border-left: 4px solid #667eea;">
+                        💡 엑셀/TXT 파일 형식: 키워드, 링크, 제목 컬럼이 포함되어야 합니다. 각 행마다 원고가 자동 생성됩니다.
+                    </div>
+                    <div id="selectedFolderPath" style="margin-top: 10px; padding: 10px; background: #f0f0f0; border-radius: 6px; font-size: 14px; color: #666;">
+                        저장 폴더: 선택되지 않음
+                    </div>
+                </div>
+
+                <div class="input-group" style="margin-top: 20px;">
+                    <label>링크 또는 키워드 입력 (한 줄에 하나씩 입력, 입력 순서대로 생성)</label>
+                    <textarea id="batchInputText" placeholder="예시:&#10;https://blog.naver.com/example/123&#10;강남 맛집&#10;https://news.naver.com/article/456&#10;홍대 카페" style="width: 100%; min-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical;"></textarea>
+                    <div style="margin-top: 8px; font-size: 12px; color: #666; padding: 10px; background: #e7f3ff; border-radius: 6px; border-left: 4px solid #667eea;">
+                        💡 한 줄에 하나씩 입력하세요. 링크(URL) 또는 키워드를 입력할 수 있습니다. 입력된 순서대로 원고가 생성됩니다.
+                    </div>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button class="btn-crawl" onclick="clearBatchInput()" style="flex: 1; background: #dc3545;">입력 내용 지우기</button>
+                    </div>
+                    <div id="inputCountStatus" style="margin-top: 10px; padding: 10px; background: #d4edda; border: 1px solid #c3e6cb; border-radius: 6px; font-size: 14px; color: #155724;">
+                        📊 입력된 항목: <strong id="inputItemCount">0</strong>개
+                    </div>
+                </div>
+
+                <button id="batchGenerateBtn" class="btn" onclick="startBatchGeneration()" style="margin-top: 15px;">대량 원고 생성 시작</button>
+                <div id="batchProgress" style="display: none; margin-top: 15px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #667eea;">
+                    <div style="font-weight: bold; margin-bottom: 10px; color: #333;">📊 대량 생성 진행 상황:</div>
+                    <div id="batchProgressText" style="font-size: 14px; color: #555; line-height: 1.8;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="singleGenerationSection" class="section">
             <div class="section-title">키워드 입력 및 최신 정보 수집</div>
             
             <div class="input-group">
@@ -1532,6 +1668,19 @@ ${p57}`;
                 document.getElementById('reference5').value = '';
                 document.getElementById('reference6').value = '';
                 
+                // 대량 생성 필드 초기화
+                const batchFileInput = document.getElementById('batchFileInput');
+                if(batchFileInput) batchFileInput.value = '';
+                const selectedFolderPath = document.getElementById('selectedFolderPath');
+                if(selectedFolderPath) selectedFolderPath.textContent = '저장 폴더: 선택되지 않음';
+                const batchProgress = document.getElementById('batchProgress');
+                if(batchProgress) batchProgress.style.display = 'none';
+                selectedFolderHandle = null;
+                
+                // 생성 방식 초기화 (단건으로)
+                document.getElementById('singleMode').checked = true;
+                toggleGenerationMode();
+                
                 // 모든 섹션 숨기기
                 document.getElementById('titleSection').classList.add('hidden');
                 document.getElementById('contentSection').classList.add('hidden');
@@ -2169,6 +2318,915 @@ ${p57}`;
                     }
                 }
             });
+        }
+        // 단건/대량 생성 모드 전환
+        function toggleGenerationMode() {
+            const singleMode = document.getElementById('singleMode').checked;
+            const singleSection = document.getElementById('singleGenerationSection');
+            const batchUI = document.getElementById('batchGenerationUI');
+            const titleSection = document.getElementById('titleSection');
+            const contentSection = document.getElementById('contentSection');
+            
+            if (singleMode) {
+                // 단건 생성 모드
+                singleSection.style.display = 'block';
+                batchUI.style.display = 'none';
+            } else {
+                // 대량 생성 모드
+                singleSection.style.display = 'none';
+                batchUI.style.display = 'block';
+                titleSection.classList.add('hidden');
+                contentSection.classList.add('hidden');
+            }
+        }
+        window.toggleGenerationMode = toggleGenerationMode;
+
+        // 저장 폴더 선택
+        let selectedFolderHandle = null;
+        async function selectOutputFolder() {
+            try {
+                if (!window.showDirectoryPicker) {
+                    alert('이 브라우저는 폴더 선택을 지원하지 않습니다. Chrome, Edge 등 최신 브라우저를 사용해주세요.');
+                    return;
+                }
+                
+                selectedFolderHandle = await window.showDirectoryPicker();
+                const folderPath = selectedFolderHandle.name;
+                document.getElementById('selectedFolderPath').textContent = '저장 폴더: ' + folderPath;
+            } catch (error) {
+                if (error.name !== 'AbortError') {
+                    console.error('폴더 선택 오류:', error);
+                    alert('폴더 선택 중 오류가 발생했습니다: ' + error.message);
+                }
+            }
+        }
+        window.selectOutputFolder = selectOutputFolder;
+
+        // 엑셀 파일 파싱 (SheetJS 라이브러리 사용)
+        async function parseExcelFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        if (typeof XLSX === 'undefined') {
+                            reject(new Error('SheetJS 라이브러리를 로드할 수 없습니다. 페이지를 새로고침해주세요.'));
+                            return;
+                        }
+                        
+                        const workbook = XLSX.read(e.target.result, { type: 'array' });
+                        const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                        
+                        const items = jsonData.map(row => ({
+                            keyword: row['키워드'] || row['keyword'] || row['Keyword'] || row['A'] || row['a'] || '',
+                            link: row['링크'] || row['link'] || row['Link'] || row['URL'] || row['url'] || row['B'] || row['b'] || '',
+                            title: row['제목'] || row['title'] || row['Title'] || row['C'] || row['c'] || ''
+                        })).filter(item => item.keyword || item.link || item.title);
+                        
+                        resolve(items);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다.'));
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+
+        // TXT 파일 파싱
+        async function parseTxtFile(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    try {
+                        const text = e.target.result;
+                        const lines = text.split('\n').filter(line => line.trim());
+                        
+                        // 첫 줄이 헤더인지 확인
+                        const firstLine = lines[0].toLowerCase();
+                        const hasHeader = firstLine.includes('키워드') || firstLine.includes('keyword') || 
+                                         firstLine.includes('링크') || firstLine.includes('link') ||
+                                         firstLine.includes('제목') || firstLine.includes('title');
+                        
+                        const startIndex = hasHeader ? 1 : 0;
+                        const items = [];
+                        
+                        for (let i = startIndex; i < lines.length; i++) {
+                            const line = lines[i].trim();
+                            if (!line) continue;
+                            
+                            // 탭 또는 쉼표로 구분
+                            const parts = line.split(/\t|,|,/).map(p => p.trim());
+                            
+                            if (parts.length >= 3) {
+                                items.push({
+                                    keyword: parts[0] || '',
+                                    link: parts[1] || '',
+                                    title: parts[2] || ''
+                                });
+                            } else if (parts.length === 2) {
+                                items.push({
+                                    keyword: parts[0] || '',
+                                    link: parts[1] || '',
+                                    title: ''
+                                });
+                            } else if (parts.length === 1) {
+                                items.push({
+                                    keyword: parts[0] || '',
+                                    link: '',
+                                    title: ''
+                                });
+                            }
+                        }
+                        
+                        resolve(items);
+                    } catch (error) {
+                        reject(error);
+                    }
+                };
+                reader.onerror = () => reject(new Error('파일을 읽을 수 없습니다.'));
+                reader.readAsText(file, 'UTF-8');
+            });
+        }
+
+
+        // 대량 입력 내용 지우기
+        function clearBatchInput() {
+            if (confirm('입력 내용을 모두 지우시겠습니까?')) {
+                document.getElementById('batchInputText').value = '';
+                updateInputCount(); // 카운트 업데이트
+            }
+        }
+        window.clearBatchInput = clearBatchInput;
+
+
+        // 텍스트 입력에서 항목 파싱
+        function parseBatchInputText(text) {
+            const lines = text.split('\n').map(line => line.trim()).filter(line => line);
+            const items = [];
+            
+            for (const line of lines) {
+                // URL인지 확인
+                const isUrl = /^https?:\/\//i.test(line);
+                
+                if (isUrl) {
+                    items.push({
+                        keyword: '',
+                        link: line,
+                        title: ''
+                    });
+                } else {
+                    items.push({
+                        keyword: line,
+                        link: '',
+                        title: ''
+                    });
+                }
+            }
+            
+            return items;
+        }
+
+        // 대량 생성 시작
+        async function startBatchGeneration() {
+            // selectedFolderHandle이 유효한지 확인
+            if (!selectedFolderHandle) {
+                alert('저장 폴더를 선택해주세요.');
+                return;
+            }
+            
+            // 폴더 권한 확인 및 요청
+            try {
+                const permissionStatus = await selectedFolderHandle.queryPermission({ mode: 'readwrite' });
+                if (permissionStatus !== 'granted') {
+                    const requestStatus = await selectedFolderHandle.requestPermission({ mode: 'readwrite' });
+                    if (requestStatus !== 'granted') {
+                        alert('폴더 쓰기 권한이 필요합니다. 권한을 허용해주세요.');
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.log('권한 확인 중 오류 (무시 가능):', error);
+                // 일부 브라우저에서는 queryPermission을 지원하지 않을 수 있음
+            }
+            
+            const batchBtn = document.getElementById('batchGenerateBtn');
+            const progressDiv = document.getElementById('batchProgress');
+            const progressText = document.getElementById('batchProgressText');
+            
+            batchBtn.disabled = true;
+            batchBtn.textContent = '대량 생성 중...';
+            progressDiv.style.display = 'block';
+            progressText.innerHTML = '데이터를 읽는 중...';
+            
+            try {
+                let items = [];
+                
+                // 텍스트 입력창에서 데이터 가져오기
+                const batchInputText = document.getElementById('batchInputText').value.trim();
+                if (batchInputText) {
+                    items = parseBatchInputText(batchInputText);
+                }
+                
+                // 파일이 있으면 파일에서도 가져오기
+                const fileInput = document.getElementById('batchFileInput');
+                const file = fileInput.files[0];
+                if (file) {
+                    const fileName = file.name.toLowerCase();
+                    let fileItems = [];
+                    
+                    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                        progressText.innerHTML = '엑셀 파일을 파싱하는 중...';
+                        fileItems = await parseExcelFile(file);
+                    } else if (fileName.endsWith('.txt') || fileName.endsWith('.csv')) {
+                        progressText.innerHTML = '텍스트 파일을 파싱하는 중...';
+                        fileItems = await parseTxtFile(file);
+                    }
+                    
+                    // 텍스트 입력 항목 뒤에 파일 항목 추가
+                    items = items.concat(fileItems);
+                }
+                
+                if (items.length === 0) {
+                    throw new Error('입력된 데이터가 없습니다. 링크/키워드를 입력하거나 파일을 업로드해주세요.');
+                }
+                
+                progressText.innerHTML = `총 ${items.length}개의 항목을 찾았습니다. 원고 생성을 시작합니다...`;
+                
+                let successCount = 0;
+                let failCount = 0;
+                
+                // 각 항목마다 원고 생성
+                for (let i = 0; i < items.length; i++) {
+                    const item = items[i];
+                    const currentNum = i + 1;
+                    
+                    progressText.innerHTML = `진행 중: ${currentNum}/${items.length}<br>키워드: ${item.keyword || '(없음)'}<br>제목: ${item.title || '(없음)'}`;
+                    
+                    try {
+                        // selectedFolderHandle 유효성 확인
+                        if (!selectedFolderHandle) {
+                            throw new Error('저장 폴더 핸들이 유효하지 않습니다. 폴더를 다시 선택해주세요.');
+                        }
+                        
+                        // 원고 생성
+                        const result = await generateContentForBatch(item);
+                        
+                        if (result && result.html) {
+                            // 생성된 제목 사용 (없으면 키워드, 그것도 없으면 기본값)
+                            const finalTitle = result.title || item.title || item.keyword || `원고_${currentNum}`;
+                            
+                            // 폴더명과 파일명 정리 (Windows에서 사용할 수 없는 문자 제거)
+                            const sanitizeName = (name) => {
+                                if (!name || typeof name !== 'string' || name.trim().length === 0) {
+                                    return `item_${currentNum}`;
+                                }
+                                // Windows에서 사용할 수 없는 문자 제거 및 길이 제한
+                                let sanitized = name
+                                    .replace(/[<>:"/\\|?*\x00-\x1f]/g, '_')  // 특수문자 제거
+                                    .replace(/\.\./g, '_')  // .. 제거
+                                    .replace(/^\.+/, '')  // 시작의 . 제거
+                                    .replace(/\.+$/, '')  // 끝의 . 제거
+                                    .replace(/\s+/g, ' ')  // 연속 공백 제거
+                                    .replace(/^CON$|^PRN$|^AUX$|^NUL$|^COM[1-9]$|^LPT[1-9]$/i, '_$&')  // Windows 예약어 처리
+                                    .trim();
+                                
+                                // 빈 문자열이면 기본값 사용
+                                if (sanitized.length === 0) {
+                                    return `item_${currentNum}`;
+                                }
+                                
+                                // 길이 제한 (Windows 파일명 최대 길이 고려)
+                                return sanitized.substring(0, 200);
+                            };
+                            
+                            const folderName = sanitizeName(finalTitle);
+                            const fileName = sanitizeName(finalTitle) + '.html';
+                            
+                            // 폴더명과 파일명이 비어있지 않은지 확인
+                            if (!folderName || folderName.length === 0 || !fileName || fileName.length === 0) {
+                                throw new Error('폴더명 또는 파일명을 생성할 수 없습니다.');
+                            }
+                            
+                            // 폴더 생성 (재시도 로직 포함)
+                            let folderHandle = null;
+                            let retryCount = 0;
+                            const maxRetries = 3;
+                            
+                            while (retryCount < maxRetries && !folderHandle) {
+                                try {
+                                    folderHandle = await selectedFolderHandle.getDirectoryHandle(folderName, { create: true });
+                                    break;
+                                } catch (error) {
+                                    // 사용자 활성화가 필요한 경우
+                                    if (error.message.includes('User activation is required') || error.message.includes('permissions')) {
+                                        // 권한 재요청 시도
+                                        try {
+                                            const requestStatus = await selectedFolderHandle.requestPermission({ mode: 'readwrite' });
+                                            if (requestStatus === 'granted') {
+                                                // 권한이 허용되면 다시 시도
+                                                folderHandle = await selectedFolderHandle.getDirectoryHandle(folderName, { create: true });
+                                                break;
+                                            } else {
+                                                throw new Error('폴더 쓰기 권한이 필요합니다. 페이지를 새로고침하고 다시 시도해주세요.');
+                                            }
+                                        } catch (permError) {
+                                            retryCount++;
+                                            if (retryCount >= maxRetries) {
+                                                throw new Error('폴더 쓰기 권한이 필요합니다. 페이지를 새로고침하고 다시 시도해주세요.');
+                                            }
+                                            await new Promise(resolve => setTimeout(resolve, 1000));
+                                        }
+                                    }
+                                    // 폴더가 이미 존재하는 경우
+                                    else if (error.name === 'InvalidStateError' || error.message.includes('already exists')) {
+                                        try {
+                                            folderHandle = await selectedFolderHandle.getDirectoryHandle(folderName);
+                                            break;
+                                        } catch (e) {
+                                            retryCount++;
+                                            if (retryCount >= maxRetries) {
+                                                throw new Error(`폴더 접근 실패: ${e.message}`);
+                                            }
+                                            await new Promise(resolve => setTimeout(resolve, 500));
+                                        }
+                                    } else {
+                                        retryCount++;
+                                        if (retryCount >= maxRetries) {
+                                            throw new Error(`폴더 생성 실패: ${error.message}`);
+                                        }
+                                        await new Promise(resolve => setTimeout(resolve, 500));
+                                    }
+                                }
+                            }
+                            
+                            if (!folderHandle) {
+                                throw new Error('폴더 핸들을 가져올 수 없습니다.');
+                            }
+                            
+                            // HTML 파일 저장 (재시도 로직 포함)
+                            let saved = false;
+                            retryCount = 0;
+                            
+                            while (retryCount < maxRetries && !saved) {
+                                try {
+                                    const fileHandle = await folderHandle.getFileHandle(fileName, { create: true });
+                                    const writable = await fileHandle.createWritable();
+                                    await writable.write(result.html);
+                                    await writable.close();
+                                    saved = true;
+                                } catch (error) {
+                                    retryCount++;
+                                    if (retryCount >= maxRetries) {
+                                        throw new Error(`파일 저장 실패: ${error.message}`);
+                                    }
+                                    await new Promise(resolve => setTimeout(resolve, 500));
+                                }
+                            }
+                            
+                            if (!saved) {
+                                throw new Error('파일 저장에 실패했습니다.');
+                            }
+                            
+                            successCount++;
+                            progressText.innerHTML += `<br>✅ ${currentNum}번 항목 완료: ${folderName}/${fileName}`;
+                        } else {
+                            failCount++;
+                            progressText.innerHTML += `<br>❌ ${currentNum}번 항목 실패: 원고 생성 실패`;
+                        }
+                    } catch (error) {
+                        failCount++;
+                        console.error(`${currentNum}번 항목 오류:`, error);
+                        progressText.innerHTML += `<br>❌ ${currentNum}번 항목 오류: ${error.message}`;
+                    }
+                    
+                    // 다음 항목 처리 전 잠시 대기 (API 부하 방지)
+                    if (i < items.length - 1) {
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    }
+                }
+                
+                progressText.innerHTML += `<br><br><strong>✅ 대량 생성 완료!</strong><br>성공: ${successCount}개 | 실패: ${failCount}개`;
+                
+            } catch (error) {
+                console.error('대량 생성 오류:', error);
+                progressText.innerHTML = `<span style="color: #dc3545;">❌ 오류 발생: ${error.message}</span>`;
+                alert('대량 생성 중 오류가 발생했습니다: ' + error.message);
+            } finally {
+                batchBtn.disabled = false;
+                batchBtn.textContent = '대량 원고 생성 시작';
+            }
+        }
+        window.startBatchGeneration = startBatchGeneration;
+
+        // 대량 생성을 위한 원고 생성 함수
+        async function generateContentForBatch(item) {
+            try {
+                const keyword = item.keyword || '';
+                const link = item.link || '';
+                const title = item.title || '';
+                
+                // 링크가 있으면 크롤링 (단건과 동일한 순서로 처리)
+                let ref1 = '', ref2 = '', ref3 = '';
+                if (link) {
+                    try {
+                        // 단건 생성과 동일하게 _0x7b8c 함수 사용
+                        const content = await collectFromUrlForBatch(link);
+                        if (content) {
+                            ref1 = content;
+                        }
+                    } catch (error) {
+                        console.log('링크 크롤링 실패:', error);
+                        // 에러가 발생해도 계속 진행 (키워드로 수집 시도)
+                    }
+                }
+                
+                // 키워드가 있으면 수집
+                if (keyword && !ref1) {
+                    try {
+                        const collected = await collectKeywordForBatch(keyword);
+                        if (collected && collected.length > 0) {
+                            ref1 = collected[0] || '';
+                            ref2 = collected[1] || '';
+                            ref3 = collected[2] || '';
+                        }
+                    } catch (error) {
+                        console.log('키워드 수집 실패:', error);
+                    }
+                }
+                
+                // 제목이 없으면 생성
+                let finalTitle = (title || '').trim();
+                if (!finalTitle) {
+                    try {
+                        const titles = await generateTitlesForBatch(keyword, ref1, ref2, ref3);
+                        if (titles && titles.length > 0) {
+                            finalTitle = titles[0].replace(/^\d+\.\s*/, '').trim();
+                        }
+                    } catch (error) {
+                        console.log('제목 생성 실패:', error);
+                    }
+                }
+                
+                // 최종적으로 제목이 없으면 키워드나 기본값 사용
+                if (!finalTitle || finalTitle.length === 0) {
+                    finalTitle = (keyword || '').trim() || '원고';
+                }
+                
+                // 원고 생성
+                const content = await generateContentWithData(keyword, finalTitle, ref1, ref2, ref3);
+                
+                // HTML 문서로 변환
+                const htmlDoc = `<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${finalTitle}</title>
+    <style>
+        body {
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    <h1>${finalTitle}</h1>
+    ${content}
+</body>
+</html>`;
+                
+                return { html: htmlDoc, title: finalTitle };
+            } catch (error) {
+                console.error('원고 생성 오류:', error);
+                throw error;
+            }
+        }
+
+        // 배치용 링크 크롤링 (단건과 동일한 로직 사용)
+        async function collectFromUrlForBatch(url) {
+            try {
+                // 단건 생성과 동일하게 _0x7b8c 함수 사용
+                if (typeof window._0x7b8c === 'function') {
+                    const content = await window._0x7b8c(url);
+                    if (!content || content.trim().length === 0) {
+                        throw new Error('블로그 본문을 찾을 수 없습니다.');
+                    }
+                    // 한글이 포함되어 있는지 확인
+                    const hasKorean = /[가-힣]/.test(content);
+                    if (!hasKorean) {
+                        throw new Error('한글 내용을 찾을 수 없습니다.');
+                    }
+                    return content;
+                } else {
+                    // _0x7b8c 함수가 없으면 직접 처리 (단건과 동일한 로직)
+                    let targetUrl = url;
+                    if (url.includes('blog.naver.com/') && !url.includes('m.blog.naver.com')) {
+                        targetUrl = url.replace('blog.naver.com/', 'm.blog.naver.com/');
+                    }
+                    
+                    if (typeof window._0x5j6k !== 'function') {
+                        throw new Error('_0x5j6k 함수가 정의되지 않았습니다.');
+                    }
+                    
+                    const html = await window._0x5j6k(targetUrl);
+                    if (!html) {
+                        throw new Error('블로그 내용을 가져올 수 없습니다.');
+                    }
+                    
+                    if (typeof window._0x9n0o !== 'function') {
+                        throw new Error('_0x9n0o 함수가 정의되지 않았습니다.');
+                    }
+                    
+                    const content = window._0x9n0o(html);
+                    if (!content || content.trim().length === 0) {
+                        throw new Error('블로그 본문을 찾을 수 없습니다.');
+                    }
+                    
+                    // 한글이 포함되어 있는지 확인
+                    const hasKorean = /[가-힣]/.test(content);
+                    if (!hasKorean) {
+                        throw new Error('한글 내용을 찾을 수 없습니다.');
+                    }
+                    
+                    return content;
+                }
+            } catch (error) {
+                console.error('링크 크롤링 오류:', error);
+                throw error; // 에러를 다시 throw하여 상위에서 처리할 수 있도록
+            }
+        }
+
+        // 배치용 키워드 수집
+        async function collectKeywordForBatch(keyword) {
+            try {
+                const results = [];
+                
+                // 구글 뉴스 수집
+                if (typeof window._0x9g0h === 'function') {
+                    try {
+                        const newsUrls = await window._0x9g0h(keyword);
+                        for (let i = 0; i < Math.min(3, newsUrls.length); i++) {
+                            try {
+                                const content = await window._0x7n8p(newsUrls[i]);
+                                if (content) results.push(content);
+                            } catch (e) {
+                                console.log('뉴스 수집 실패:', e);
+                            }
+                        }
+                    } catch (e) {
+                        console.log('구글 뉴스 검색 실패:', e);
+                    }
+                }
+                
+                // 네이버 블로그 수집
+                if (typeof _0x5p6q === 'function' && results.length < 3) {
+                    try {
+                        const blogUrls = await _0x5p6q(keyword);
+                        for (let i = 0; i < Math.min(3 - results.length, blogUrls.length); i++) {
+                            try {
+                                const content = await _0x7b8c(blogUrls[i]);
+                                if (content) results.push(content);
+                            } catch (e) {
+                                console.log('블로그 수집 실패:', e);
+                            }
+                        }
+                    } catch (e) {
+                        console.log('블로그 검색 실패:', e);
+                    }
+                }
+                
+                return results;
+            } catch (error) {
+                console.error('키워드 수집 오류:', error);
+                return [];
+            }
+        }
+
+        // 배치용 제목 생성 (11개 생성 후 임의로 1개 선택)
+        async function generateTitlesForBatch(keyword, ref1, ref2, ref3) {
+            try {
+                if (!window._0x7g8h) {
+                    throw new Error('API 키가 설정되지 않았습니다.');
+                }
+                
+                const prompt = `# 역할 지정
+
+당신은 네이버 블로그 검색 로직(C-RANK, DIA+)에 최적화된 전문 작가입니다.
+
+# 프로세스 1: 제목 생성
+
+아래 조건에 맞춰 제목 11개를 제시하십시오.
+
+- 조건: 제목생성을 수집한 최신 뉴스 및 블로그 글을 기반으로 한 최적화된 블로그제목을 작성합니다. 꼭 메인키워드를 제목에 그대로 언급되어야합니다.
+- 목표: 검색 노출 및 클릭률 유도.
+- 출력: 제목만 깔끔하게 출력하고, 사용자의 선택을 기다리십시오. (본문 작성 금지)
+
+메인 키워드: ${keyword}
+
+${ref1 ? `[참고 내용 1]\n${ref1.substring(0, 1500)}${ref1.length > 1500 ? '...' : ''}\n\n` : ''}
+${ref2 ? `[참고 내용 2]\n${ref2.substring(0, 1500)}${ref2.length > 1500 ? '...' : ''}\n\n` : ''}
+${ref3 ? `[참고 내용 3]\n${ref3.substring(0, 1500)}${ref3.length > 1500 ? '...' : ''}\n\n` : ''}
+
+위 최신 뉴스 및 블로그 내용을 참고하여 제목 11개를 생성해주세요.`;
+                
+                const response = await fetch(window._0x7q8r(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error.message || 'API 오류');
+                }
+                
+                const generatedText = data.candidates[0].content.parts[0].text;
+                const titles = window._0x3t4u2(generatedText);
+                
+                // 대량 생성은 11개 중 임의로 1개 선택
+                if (titles && titles.length > 0) {
+                    // 11개 중 랜덤하게 1개 선택
+                    const randomIndex = Math.floor(Math.random() * Math.min(titles.length, 11));
+                    return [titles[randomIndex]];
+                }
+                return [];
+            } catch (error) {
+                console.error('제목 생성 오류:', error);
+                return [];
+            }
+        }
+
+        // 배치용 원고 생성
+        async function generateContentWithData(keyword, title, ref1, ref2, ref3) {
+            try {
+                if (!window._0x7g8h) {
+                    throw new Error('API 키가 설정되지 않았습니다.');
+                }
+                
+                // 원고 생성 프롬프트 (기존 _0x9z0a 함수의 프롬프트 사용)
+                const p1 = '역할 수행을 위한 완성된 마스터 프롬프트';
+                const p2 = '당신은 네이버 블로그';
+                const p3 = '홈피드';
+                const p4 = '에 최적화된 파워 블로거 입니다.';
+                const p5 = '주제에 대해 화내고, 기뻐하고, 답답해하며 독자와';
+                const p6 = '감정적 공감';
+                const p7 = '을 나누는 진짜 사람처럼 글을 작성하세요.';
+                const p8 = '**주의사항**';
+                const p9 = '각 섹션별 구분선을 꼭 들어가야한다';
+                const p10 = '섹션별 소제목은';
+                const p11 = '""';
+                const p12 = '따옴표로 표시하고 진한 bold 로 표시한다';
+                const p13 = 'Operation Logic (자동 판단)';
+                const p14 = '[모드 1: 팩트 체크] (150자 미만 제목 입력 시) -> [Google Search] 후 팩트+감정 작성.';
+                const p15 = '[모드 2: 창의적 재창조] (150자 이상 원고 입력 시) -> 원고 기반으로 1인칭 시점 재구성.';
+                const p16 = 'Tone & Manner (반존대 & 감정 표출)';
+                const p17 = '말투: 존댓말(해요체) 베이스에 혼잣말(반말) 섞기.';
+                const p18 = '1인칭 시점:';
+                const p19 = '3인칭 금지.';
+                const p20 = '"제가 볼 때는"';
+                const p21 = ',';
+                const p22 = '"제 생각엔"';
+                const p23 = '사용.';
+                const p24 = 'Output Format (엄격한 금지 규칙 - 절대 준수)';
+                const p25 = '마크다운 절대 금지: 텍스트를 강조하고 싶어도 **나 ### 같은 기호를 절대 쓰지 마세요. 그냥 텍스트로만 쓰세요. (예: (X) 충격적인 뉴스 / (O) 충격적인 뉴스)';
+                const p26 = '줄바꿈 (생명): 문장이 끝나는 마침표(.), 물음표(?), 느낌표(!) 뒤에는 무조건 엔터키를 두 번 쳐서 빈 줄을 만드세요.';
+                const p27 = '구분선 사용: 섹션(문단)이 나뉘는 곳에만 점선(-------------)을 넣으세요.';
+                const p34 = '출력 순서 및 구조 (이 양식을 그대로 따르세요. 반드시 HTML 코드 블록으로 출력해야 합니다)';
+                const p35 = '1. (감정 자극형 제목)';
+                const p36 = '2. (직설적 비판형 제목)';
+                const p37 = '3. (요약 및 정보성 제목)';
+                const p38 = '```html';
+                const p39 = '<table style="width: 100%; border: 1px solid black; border-collapse: collapse; background-color: [랜덤_연한_파스텔색상_코드];">';
+                const p40 = '    <tr>';
+                const p41 = '        <td style="padding: 15px; font-size: 19px; font-style: italic; color: #333; line-height: 1.6;">';
+                const p42 = '            " (여기에 검색 노출용 태그 150자 요약문 내용 작성) "';
+                const p43 = '        </td>';
+                const p44 = '    </tr>';
+                const p45 = '</table>';
+                const p46 = '<hr>';
+                const p47 = '<p> (강렬한 도입부 문장 작성. 문장이 끝날 때마다 &lt;br&gt;&lt;br&gt; 태그를 넣어 줄바꿈 2번 필수 적용) </p>';
+                const p48 = '<br><br>';
+                const p49 = '<table style="width: 100%; border-collapse: collapse; border-bottom: 5px solid [랜덤_색상코드_1]; margin-bottom: 20px;">';
+                const p50 = '    <tr>';
+                const p51 = '        <td style="padding: 10px 5px; font-weight: bold; font-size: 1.2em;">';
+                const p52 = '            (첫 번째 소제목 텍스트)';
+                const p53 = '        </td>';
+                const p54 = '    </tr>';
+                const p55 = '</table>';
+                const p56 = '<p> (본문 내용 1 작성. 문장마다 &lt;br&gt;&lt;br&gt; 필수) </p>';
+                const p57 = '<table style="width: 100%; border-collapse: collapse; border-bottom: 5px solid [랜덤_색상코드_2]; margin-bottom: 20px;">';
+                const p58 = '    <tr>';
+                const p59 = '        <td style="padding: 10px 5px; font-weight: bold; font-size: 1.2em;">';
+                const p60 = '            (두 번째 소제목 텍스트)';
+                const p61 = '        </td>';
+                const p62 = '    </tr>';
+                const p63 = '</table>';
+                const p64 = '<p> (본문 내용 2 작성. 문장마다 &lt;br&gt;&lt;br&gt; 필수) </p>';
+                const p65 = '<table style="width: 100%; border-collapse: collapse; border-bottom: 5px solid [랜덤_색상코드_3]; margin-bottom: 20px;">';
+                const p66 = '    <tr>';
+                const p67 = '        <td style="padding: 10px 5px; font-weight: bold; font-size: 1.2em;">';
+                const p68 = '            (세 번째 소제목 텍스트)';
+                const p69 = '        </td>';
+                const p70 = '    </tr>';
+                const p71 = '</table>';
+                const p72 = '<p> (본문 내용 3 작성. 감정을 담아 작성하고 문장마다 &lt;br&gt;&lt;br&gt; 필수) </p>';
+                const p73 = '<table style="width: 100%; border-collapse: collapse; border-bottom: 5px solid [랜덤_색상코드_4]; margin-bottom: 20px;">';
+                const p74 = '    <tr>';
+                const p75 = '        <td style="padding: 10px 5px; font-weight: bold; font-size: 1.2em;">';
+                const p76 = '            (네 번째 소제목 텍스트)';
+                const p77 = '        </td>';
+                const p78 = '    </tr>';
+                const p79 = '</table>';
+                const p80 = '<p> (본문 내용 4 작성. 예측 내용 포함하고 문장마다 &lt;br&gt;&lt;br&gt; 필수) </p>';
+                const p81 = '<p> (마무리 멘트 작성) </p>';
+                const p82 = '<p> (전체 요약 및 마지막 할 말. &lt;br&gt;&lt;br&gt; 필수) </p>';
+                const p83 = '<br>';
+                const p84 = '<p><strong>Q. (독자 참여 유도 질문)</strong></p>';
+                const p85 = '<br>';
+                const p86 = '<p style="color: #666; font-size: 0.9em;">(해시태그 10개)</p>';
+                const p87 = '```';
+                
+                const prompt = `${p1}
+
+
+${p2} '${p3}'${p4}
+
+${p5} '${p6}'${p7}
+
+${p8}
+
+${p9}
+
+${p10} ${p11} ${p12}
+
+${p13}
+
+${p14}
+
+${p15}
+
+${p16} (반존대 & 감정 표출)
+
+${p17}
+
+${p18}  ${p19} "${p20}"${p21} "${p22}" ${p23}
+
+${p24} - 절대 준수)
+
+${p25}
+
+${p26}
+
+${p27}
+
+${p34}
+
+${p35}
+
+${p36}
+
+${p37}
+
+(빈 줄)
+
+${p38}
+${p39}
+${p40}
+${p41}
+${p42}
+${p43}
+${p44}
+${p45}
+${p46}
+
+${p47}
+${p48}
+
+${p49}
+${p50}
+${p51}
+${p52}
+${p53}
+${p54}
+${p55}
+
+${p56}
+
+${p57}
+${p58}
+${p59}
+${p60}
+${p61}
+${p62}
+${p63}
+
+${p64}
+
+${p65}
+${p66}
+${p67}
+${p68}
+${p69}
+${p70}
+${p71}
+
+${p72}
+
+${p73}
+${p74}
+${p75}
+${p76}
+${p77}
+${p78}
+${p79}
+
+${p80}
+
+${p81}
+${p82}
+${p83}
+
+${p84}
+${p85}
+
+${p86}
+${p87}
+
+
+# 입력 데이터
+
+1. 메인 키워드: ${keyword}
+
+2. 참고할 최신 뉴스 및 블로그 글(총 6개):
+
+   📰 [구글 뉴스 1]
+${ref1 || '(없음)'}
+
+   📰 [구글 뉴스 2]
+(없음)
+
+   📰 [구글 뉴스 3]
+(없음)
+
+   📝 [네이버 블로그 1]
+${ref2 || '(없음)'}
+
+   📝 [네이버 블로그 2]
+${ref3 || '(없음)'}
+
+   📝 [네이버 블로그 3]
+(없음)
+
+3. 선택한 제목: ${title}
+
+${p57}`;
+                
+                const response = await fetch(window._0x7q8r(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
+                
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error.message || 'API 오류');
+                }
+                
+                const generatedText = data.candidates[0].content.parts[0].text;
+                
+                // HTML 코드 블록 추출
+                function extractHTMLFromCodeBlock(text) {
+                    const htmlBlockRegex = /```html\s*([\s\S]*?)```/i;
+                    const match = text.match(htmlBlockRegex);
+                    if (match && match[1]) {
+                        return match[1].trim();
+                    }
+                    const codeBlockRegex = /```[\s\S]*?```/;
+                    const codeMatch = text.match(codeBlockRegex);
+                    if (codeMatch) {
+                        const codeContent = codeMatch[0].replace(/```html?/gi, '').replace(/```/g, '').trim();
+                        if (/<[^>]+>/.test(codeContent)) {
+                            return codeContent;
+                        }
+                    }
+                    return text.replace(/\n/g, '<br>');
+                }
+                
+                const htmlContent = extractHTMLFromCodeBlock(generatedText);
+                return htmlContent;
+            } catch (error) {
+                console.error('원고 생성 오류:', error);
+                throw error;
+            }
         }
     </script>
 </body>
